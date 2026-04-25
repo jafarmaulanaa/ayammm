@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Save the Chicken - Ja'far Maulana</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* ==========================================================================
+           BAGIAN 1: CSS RESET & VARIABEL TEMA MODERN (LIQUID GLASS)
+           ========================================================================== */
+        :root {
+            --bg-base: #0a0c14;
+            --glass-bg: rgba(22, 27, 45, 0.45);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+            --accent-primary: #8b5cf6;
+            --accent-secondary: #3b82f6;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            touch-action: none;
+            color: var(--text-main);
+        }
+
+        /* ==========================================================================
+           BAGIAN 2: KONTANER GAME & BACKGROUND GRID
+           ========================================================================== */
+        #game-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            height: 100vh;
+            max-height: 800px;
+            /* Latar belakang dengan efek Grid modern */
+            background-color: #0d111a;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-position: center;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            overflow: hidden;
+        }
+
+        /* Gradient Overlay agar background game tidak terlalu mencolok saat main */
+        #game-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at top, rgba(139, 92, 246, 0.1) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            image-rendering: pixelated;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* ==========================================================================
+           BAGIAN 3: EFEK GLASSMORPHISM (LIQUID GLASS PANELS)
+           ========================================================================== */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 12, 20, 0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            transition: opacity 0.4s ease, visibility 0.4s;
+        }
+
+        .hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 50px 30px;
+            box-shadow: var(--glass-shadow);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            width: 85%;
+            max-width: 400px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Cahaya halus di dalam kartu kaca */
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        /* ==========================================================================
+           BAGIAN 4: TYPOGRAPHY MODERN
+           ========================================================================== */
+        h1 {
+            font-size: 3rem;
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            /* Glowing Liquid Text */
+            background: linear-gradient(135deg, #c4b5fd 0%, #a78bfa 50%, #60a5fa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
+            animation: float 4s ease-in-out infinite;
+        }
+
+        h2 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #f87171 0%, #fbbf24 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            font-weight: 300;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .author-text {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-top: 25px;
+            font-weight: 300;
+            opacity: 0.8;
+        }
+
+        .author-text span {
+            color: #a78bfa;
+            font-weight: 500;
+        }
+
+        .score-display {
+            font-size: 1.2rem;
+            color: #e2e8f0;
+            margin-bottom: 30px;
+            background: rgba(255,255,255,0.05);
+            padding: 10px 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .score-display strong {
+            font-size: 1.8rem;
+            color: #60a5fa;
+            margin-left: 10px;
+        }
+
+        /* ==========================================================================
+           BAGIAN 5: TOMBOL & UI DALAM GAME
+           ========================================================================== */
+        button {
+            padding: 16px 40px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: white;
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            box-shadow: 0 10px 20px -10px rgba(139, 92, 246, 0.6);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 50%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transform: skewX(-20deg);
+            transition: 0.5s;
+        }
+
+        button:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 15px 25px -10px rgba(139, 92, 246, 0.8);
+        }
+
+        button:hover::after {
+            left: 150%;
+        }
+
+        button:active {
+            transform: translateY(2px) scale(0.98);
+        }
+
+        /* Glass HUD untuk Skor */
+        #current-score-hud {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: white;
+            z-index: 5;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 10px 30px;
+            border-radius: 30px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: opacity 0.3s;
+        }
+
+        /* On-Screen D-Pad Controls - Gaya Liquid Glass */
+        #controls {
+            position: absolute;
+            bottom: 40px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 5;
+            gap: 12px;
+        }
+
+        .dpad-row {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .ctrl-btn {
+            width: 65px;
+            height: 65px;
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 18px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: rgba(255,255,255,0.8);
+            font-size: 24px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2), inset 0 2px 5px rgba(255,255,255,0.05);
+            transition: all 0.1s ease;
+        }
+
+        .ctrl-btn:active {
+            background: rgba(139, 92, 246, 0.4);
+            color: white;
+            transform: scale(0.92);
+            border-color: rgba(139, 92, 246, 0.5);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="game-wrapper">
+        <div id="current-score-hud" class="hidden">0</div>
+
+        <canvas id="gameCanvas"></canvas>
+
+        <div id="start-screen" class="overlay">
+            <div class="glass-card">
+                <div class="subtitle">Welcome to</div>
+                <h1>Save the<br>Chicken</h1>
+                <button id="start-btn">PLAY NOW</button>
+                <p class="author-text">Created with ♥ by <span> Ja'far Maulana</span></p>
+            </div>
+        </div>
+
+        <div id="game-over-screen" class="overlay hidden">
+            <div class="glass-card">
+                <h2>CRASHED!</h2>
+                <div class="score-display">
+                    Final Score <strong><span id="final-score">0</span></strong>
+                </div>
+                <button id="retry-btn">TRY AGAIN</button>
+            </div>
+        </div>
+
+        <div id="controls">
+            <div class="dpad-row">
+                <div class="ctrl-btn" id="btn-up">▲</div>
+            </div>
+            <div class="dpad-row">
+                <div class="ctrl-btn" id="btn-left">◀</div>
+                <div class="ctrl-btn" id="btn-down">▼</div>
+                <div class="ctrl-btn" id="btn-right">▶</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ==========================================================================
+           LOGIKA JAVASCRIPT TETAP SAMA NAMUN TERHUBUNG DENGAN UI BARU
+           ========================================================================== */
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const startScreen = document.getElementById('start-screen');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const scoreHud = document.getElementById('current-score-hud');
+        const finalScoreText = document.getElementById('final-score');
+        
+        let GAME_WIDTH = canvas.width = window.innerWidth > 600 ? 600 : window.innerWidth;
+        let GAME_HEIGHT = canvas.height = window.innerHeight > 800 ? 800 : window.innerHeight;
+        
+        const GRID_SIZE = 50;
+        let COLS = Math.floor(GAME_WIDTH / GRID_SIZE);
+        let ROWS = Math.floor(GAME_HEIGHT / GRID_SIZE);
+        let cameraY = 0; 
+        let gameState = 'START';
+        let score = 0;
+        let maxScore = 0;
+        let animationFrameId;
+        let lastTime = 0;
+        let chicken;
+        let lanes = [];
+
+        // Pixel art warna sedikit diredupkan agar cocok dengan background gelap
+        const ASSETS = {
+            chicken: {
+                colors: { 1: '#ffffff', 2: '#ff4757', 3: '#feca57', 4: '#2f3542', 5: '#dcdde1' },
+                data: [
+                    [0,0,2,2,0,0,0],
+                    [0,2,1,1,2,0,0],
+                    [0,1,1,4,1,3,0],
+                    [0,1,1,1,1,3,3],
+                    [0,1,1,1,1,0,0],
+                    [1,1,5,1,1,1,0],
+                    [1,5,5,1,1,1,0],
+                    [1,1,1,1,1,1,0],
+                    [0,1,1,1,1,0,0],
+                    [0,0,3,0,3,0,0]
+                ]
+            },
+            car1: {
+                colors: { 1: '#8b5cf6', 2: '#1e1b4b', 3: '#c4b5fd', 4: '#f5f3ff' }, // Mobil warna neon
+                data: [
+                    [0,1,1,1,1,1,1,0],
+                    [1,1,3,3,3,1,1,1],
+                    [1,3,4,4,4,3,1,1],
+                    [1,1,1,1,1,1,1,1],
+                    [1,1,1,1,1,1,1,1],
+                    [0,2,2,0,0,2,2,0]
+                ]
+            },
+            tree: {
+                colors: { 1: '#10b981', 2: '#059669', 3: '#451a03', 4: '#34d399' }, // Pohon lebih gelap modern
+                data: [
+                    [0,0,0,1,1,0,0,0],
+                    [0,0,1,4,1,1,0,0],
+                    [0,1,1,1,4,1,1,0],
+                    [1,1,4,1,1,1,1,1],
+                    [1,1,1,1,4,1,1,1],
+                    [0,1,1,1,1,1,1,0],
+                    [0,0,0,3,3,0,0,0],
+                    [0,0,0,3,3,0,0,0]
+                ]
+            }
+        };
+
+        function drawPixelArt(ctx, assetName, x, y, width, height, flipX = false) {
+            const asset = ASSETS[assetName];
+            if (!asset) return;
+            const rows = asset.data.length;
+            const cols = asset.data[0].length;
+            const pixelW = width / cols;
+            const pixelH = height / rows;
+
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const colorIndex = asset.data[r][c];
+                    if (colorIndex !== 0) {
+                        ctx.fillStyle = asset.colors[colorIndex];
+                        let drawX = x + (flipX ? (cols - 1 - c) * pixelW : c * pixelW);
+                        let drawY = y + r * pixelH;
+                        ctx.fillRect(drawX, drawY, Math.ceil(pixelW), Math.ceil(pixelH));
+                    }
+                }
+            }
+        }
+
+        class Player {
+            constructor() { this.reset(); }
+            reset() {
+                this.gridX = Math.floor(COLS / 2);
+                this.gridY = ROWS - 2;
+                this.width = GRID_SIZE * 0.8;
+                this.height = GRID_SIZE * 0.8;
+                this.isDead = false;
+                this.direction = 'UP';
+                this.actualX = this.gridX * GRID_SIZE;
+                this.actualY = this.gridY * GRID_SIZE;
+            }
+            move(dx, dy) {
+                if (this.isDead || gameState !== 'PLAYING') return;
+                let nextX = this.gridX + dx;
+                let nextY = this.gridY + dy;
+                if (nextX >= 0 && nextX < COLS) this.gridX = nextX;
+                if (nextY <= this.gridY || (nextY > this.gridY && nextY * GRID_SIZE < cameraY + GAME_HEIGHT - GRID_SIZE)) {
+                    let targetLane = lanes.find(l => l.index === nextY);
+                    let canMove = true;
+                    if (targetLane && targetLane.type === 'grass') {
+                        for (let obs of targetLane.obstacles) {
+                            if (Math.floor(obs.x / GRID_SIZE) === nextX) canMove = false;
+                        }
+                    }
+                    if (canMove) {
+                        this.gridY = nextY;
+                        if (dx > 0) this.direction = 'RIGHT';
+                        else if (dx < 0) this.direction = 'LEFT';
+                        else if (dy < 0) this.direction = 'UP';
+                        else if (dy > 0) this.direction = 'DOWN';
+                        let stepScore = (ROWS - 2) - this.gridY;
+                        if (stepScore > maxScore) {
+                            maxScore = stepScore;
+                            score = maxScore;
+                            scoreHud.innerText = score;
+                            generateLanesIfNeeded();
+                        }
+                    }
+                }
+            }
+            update() {
+                this.actualX += (this.gridX * GRID_SIZE - this.actualX) * 0.3;
+                this.actualY += (this.gridY * GRID_SIZE - this.actualY) * 0.3;
+                cameraY += ((this.gridY * GRID_SIZE - (GAME_HEIGHT / 2)) - cameraY) * 0.1;
+            }
+            draw(ctx) {
+                let drawX = this.actualX + (GRID_SIZE - this.width) / 2;
+                let drawY = this.actualY - cameraY + (GRID_SIZE - this.height) / 2;
+                if (this.isDead) {
+                    ctx.save();
+                    ctx.translate(drawX + this.width/2, drawY + this.height);
+                    ctx.scale(1, 0.2);
+                    drawPixelArt(ctx, 'chicken', -this.width/2, -this.height, this.width, this.height, this.direction === 'LEFT');
+                    ctx.restore();
+                } else {
+                    drawPixelArt(ctx, 'chicken', drawX, drawY, this.width, this.height, this.direction === 'LEFT');
+                }
+            }
+        }
+
+        class Obstacle {
+            constructor(x, y, speed, width, type, direction) {
+                this.x = x; this.y = y; this.speed = speed; this.width = width;
+                this.height = GRID_SIZE * 0.8; this.type = type; this.direction = direction;
+            }
+            update(dt) {
+                if (this.type === 'car') {
+                    this.x += this.speed * this.direction * dt;
+                    if (this.direction === 1 && this.x > GAME_WIDTH) this.x = -this.width;
+                    else if (this.direction === -1 && this.x < -this.width) this.x = GAME_WIDTH;
+                }
+            }
+            draw(ctx) {
+                let drawY = this.y - cameraY + (GRID_SIZE - this.height) / 2;
+                if (this.type === 'car') drawPixelArt(ctx, 'car1', this.x, drawY, this.width, this.height, this.direction === -1);
+                else if (this.type === 'tree') drawPixelArt(ctx, 'tree', this.x, drawY, this.width, this.height);
+            }
+        }
+
+        class Lane {
+            constructor(index, type) {
+                this.index = index; this.type = type; this.y = this.index * GRID_SIZE; this.obstacles = [];
+                this.generateObstacles();
+            }
+            generateObstacles() {
+                if (this.type === 'road') {
+                    let speed = 100 + Math.random() * 150;
+                    let direction = Math.random() > 0.5 ? 1 : -1;
+                    let numCars = Math.floor(Math.random() * 2) + 1;
+                    let spacing = GAME_WIDTH / numCars;
+                    for (let i = 0; i < numCars; i++) {
+                        this.obstacles.push(new Obstacle(i * spacing + (Math.random() * 50), this.y, speed, GRID_SIZE * 1.5, 'car', direction));
+                    }
+                } else if (this.type === 'grass') {
+                    let numTrees = Math.floor(Math.random() * 4);
+                    let occupiedGrids = new Set();
+                    for (let i = 0; i < numTrees; i++) {
+                        let gridX = Math.floor(Math.random() * COLS);
+                        if (this.index === ROWS - 2 && gridX === Math.floor(COLS/2)) continue;
+                        if (!occupiedGrids.has(gridX)) {
+                            occupiedGrids.add(gridX);
+                            this.obstacles.push(new Obstacle(gridX * GRID_SIZE, this.y, 0, GRID_SIZE, 'tree', 1));
+                        }
+                    }
+                }
+            }
+            update(dt) { for (let obs of this.obstacles) obs.update(dt); }
+            draw(ctx) {
+                let drawY = this.y - cameraY;
+                if (drawY > GAME_HEIGHT || drawY + GRID_SIZE < 0) return;
+                
+                // Warna disesuaikan untuk tema gelap
+                if (this.type === 'grass') {
+                    ctx.fillStyle = '#064e3b'; // Rumput gelap
+                    ctx.fillRect(0, drawY, GAME_WIDTH, GRID_SIZE);
+                    ctx.fillStyle = '#065f46';
+                    ctx.fillRect(0, drawY, GAME_WIDTH, 5);
+                } else if (this.type === 'road') {
+                    ctx.fillStyle = '#1e293b'; // Aspal gelap
+                    ctx.fillRect(0, drawY, GAME_WIDTH, GRID_SIZE);
+                    ctx.fillStyle = '#334155';
+                    for (let i = 0; i < GAME_WIDTH; i += 40) ctx.fillRect(i, drawY + GRID_SIZE/2 - 2, 20, 4);
+                }
+                for (let obs of this.obstacles) obs.draw(ctx);
+            }
+        }
+
+        function initGame() {
+            chicken = new Player();
+            lanes = [];
+            score = 0; maxScore = 0;
+            scoreHud.innerText = score;
+            cameraY = (chicken.gridY * GRID_SIZE) - (GAME_HEIGHT / 2);
+            for (let i = ROWS; i > ROWS - 30; i--) {
+                let type = 'grass';
+                if (i < ROWS - 3 && Math.random() < 0.6) type = 'road';
+                lanes.push(new Lane(i, type));
+            }
+        }
+
+        function generateLanesIfNeeded() {
+            let highestLane = lanes[lanes.length - 1].index;
+            if (chicken.gridY - highestLane < 15) {
+                for (let i = 1; i <= 10; i++) lanes.push(new Lane(highestLane - i, Math.random() < 0.6 ? 'road' : 'grass'));
+            }
+            lanes = lanes.filter(l => l.index < chicken.gridY + 10);
+        }
+
+        function checkCollisions() {
+            if (chicken.isDead) return;
+            let currentLane = lanes.find(l => l.index === chicken.gridY);
+            if (currentLane && currentLane.type === 'road') {
+                let cx = chicken.actualX + chicken.width / 2;
+                let cy = chicken.actualY + chicken.height / 2;
+                for (let obs of currentLane.obstacles) {
+                    if (cx > obs.x + obs.width*0.1 && cx < obs.x + obs.width*0.9 &&
+                        cy > obs.y + obs.height*0.1 && cy < obs.y + obs.height*0.9) {
+                        chicken.isDead = true;
+                        gameState = 'GAMEOVER';
+                        setTimeout(() => {
+                            finalScoreText.innerText = score;
+                            gameOverScreen.classList.remove('hidden');
+                            scoreHud.classList.add('hidden');
+                        }, 500);
+                    }
+                }
+            }
+        }
+
+        function gameLoop(timestamp) {
+            if (!lastTime) lastTime = timestamp;
+            let dt = (timestamp - lastTime) / 1000;
+            lastTime = timestamp;
+
+            // Jangan membersihkan canvas seluruhnya agar background grid di CSS tetap terlihat (Clear transparent)
+            ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+
+            if (gameState === 'PLAYING' || gameState === 'GAMEOVER') {
+                for (let lane of lanes) lane.update(dt);
+                chicken.update();
+                checkCollisions();
+                lanes.sort((a, b) => b.index - a.index);
+                for (let lane of lanes) lane.draw(ctx);
+                chicken.draw(ctx);
+            }
+            animationFrameId = requestAnimationFrame(gameLoop);
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (gameState !== 'PLAYING') return;
+            switch(e.key) {
+                case 'ArrowUp': case 'w': case 'W': chicken.move(0, -1); break;
+                case 'ArrowDown': case 's': case 'S': chicken.move(0, 1); break;
+                case 'ArrowLeft': case 'a': case 'A': chicken.move(-1, 0); break;
+                case 'ArrowRight': case 'd': case 'D': chicken.move(1, 0); break;
+            }
+        });
+
+        ['up', 'down', 'left', 'right'].forEach(dir => {
+            document.getElementById(`btn-${dir}`).addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                const moves = { up: [0,-1], down: [0,1], left: [-1,0], right: [1,0] };
+                chicken.move(...moves[dir]);
+            });
+        });
+
+        document.getElementById('start-btn').addEventListener('click', () => {
+            startScreen.classList.add('hidden');
+            scoreHud.classList.remove('hidden');
+            gameState = 'PLAYING';
+            initGame();
+        });
+
+        document.getElementById('retry-btn').addEventListener('click', () => {
+            gameOverScreen.classList.add('hidden');
+            scoreHud.classList.remove('hidden');
+            gameState = 'PLAYING';
+            initGame();
+        });
+
+        window.addEventListener('resize', () => {
+            GAME_WIDTH = canvas.width = window.innerWidth > 600 ? 600 : window.innerWidth;
+            GAME_HEIGHT = canvas.height = window.innerHeight > 800 ? 800 : window.innerHeight;
+            COLS = Math.floor(GAME_WIDTH / GRID_SIZE);
+            ROWS = Math.floor(GAME_HEIGHT / GRID_SIZE);
+        });
+
+        requestAnimationFrame(gameLoop);
+    </script>
+</body>
+</html>
